@@ -196,13 +196,22 @@ def get_last_saved_pdf():
 
     try:
         if last_saved_pdf_name:
+            # Capturar o nome de arquivo personalizado, se fornecido como um parâmetro na URL
+            nome_arquivo_personalizado = request.args.get('nomeArquivo')
+
+            # Definir o nome do arquivo com base no nome personalizado ou padrão
+            nome_arquivo_final = nome_arquivo_personalizado or 'Arquivo.pdf'
+
             with open(last_saved_pdf_name, 'rb') as file:
                 pdf_data = file.read()
-            return Response(pdf_data, content_type='application/pdf', headers={'Content-Disposition': 'attachment; filename=arquivo.pdf'})
+
+            return Response(pdf_data, content_type='application/pdf', headers={'Content-Disposition': f'attachment; filename={nome_arquivo_final}'})
+        else:
             return jsonify({"error": "Nenhum PDF foi salvo ainda."}), 404
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/merge_pdfs', methods=['POST'])
