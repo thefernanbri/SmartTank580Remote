@@ -26,8 +26,7 @@ def download_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
-    
-    
+ 
 # Rota para verificar o estado do scanner
 
 @app.route('/check_scanner_status')
@@ -255,5 +254,49 @@ def merge_pdfs():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# Função para verificar a existência de arquivos temporários
+def verificar_arquivos_temp():
+    pasta_temp = 'temp'  # Substitua pelo caminho real da sua pasta temp
+
+    if os.path.exists(pasta_temp) and os.path.isdir(pasta_temp):
+        arquivos_temp = os.listdir(pasta_temp)
+        return len(arquivos_temp) > 0
+    else:
+        return False
+
+# Função para limpar os arquivos temporários
+def limpar_arquivos_temp():
+    pasta_temp = 'temp'  # Substitua pelo caminho real da sua pasta temp
+
+    if os.path.exists(pasta_temp) and os.path.isdir(pasta_temp):
+        arquivos_temp = os.listdir(pasta_temp)
+        for arquivo in arquivos_temp:
+            caminho_arquivo = os.path.join(pasta_temp, arquivo)
+            try:
+                if os.path.isfile(caminho_arquivo):
+                    os.remove(caminho_arquivo)
+            except Exception as e:
+                # Trate erros de remoção de arquivo aqui, se necessário
+                print(f"Erro ao remover o arquivo {caminho_arquivo}: {str(e)}")
+    
+    # Opcional: Retorne uma mensagem de sucesso ou um status para a sua aplicação
+    return 'Digitalizações Temporárias Limpas!'
+
+
+# Rota para verificar a existência de arquivos temporários
+@app.route('/verificar_arquivos_temp', methods=['GET'])
+def verificar_arquivos_temp_route():
+    arquivos_existem = verificar_arquivos_temp()
+    return jsonify({'arquivos_existem': arquivos_existem})
+
+# Rota para limpar os arquivos temporários
+@app.route('/limpar_arquivos_temp', methods=['GET'])
+def limpar_arquivos_temp_route():
+    mensagem = limpar_arquivos_temp()
+    return mensagem
+
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
+   

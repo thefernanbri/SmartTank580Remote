@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="/static/styles.css">
 	<script src="/static/script.js"></script>
 	<script src="/static/digitalizar.js"></script>
@@ -68,17 +69,21 @@
 			<button id="SaveButton">Salvar</button>
 			<button id="JoinButton">Juntar</button>
 		</div>
-
+		
+		<!-- Caixa de seleção -->
+		<input type="checkbox" id="SalvarPC" name="SalvarPC">
+		<label for="SalvarPC" class="label">Salvar no Computador</label>
 
         <div class="message-container">
             <!-- Mensagens de estado, motivo e resultados aqui -->
+			
 			<!-- TAREFA DIGITALIZAÇÃO -->
 			<div id="resultContainer"></div>
 			<!-- ESTADO DA DIGITALIZAÇÃO -->
             <div id="stateContainer"></div>
             <div id="reasonContainer"></div>
             <div id="scanResultContainer"></div>
-			<div id="resultSalvamento"></div>
+			<div id="result"></div>
         </div>
     </div>
 </body>

@@ -1,3 +1,34 @@
+// Função para verificar a existência de arquivos temporários
+function verificarArquivosTemp() {
+	$.ajax({
+		url: '/verificar_arquivos_temp', // Rota Flask para verificar os arquivos temporários
+		type: 'GET',
+		success: function(response) {
+			if (response.arquivos_existem) {
+				// Exibir uma mensagem e as opções Limpar e Ignorar
+				var confirmacao = confirm('Existem digitalizações temporárias. Deseja limpar ?');
+
+				if (confirmacao) {
+					// O usuário escolheu Limpar, então execute a limpeza e atualize a div de resultado
+					$.ajax({
+						url: '/limpar_arquivos_temp', // Rota Flask para limpar os arquivos temporários
+						type: 'GET',
+						success: function(resultado) {
+							$('#result').text(resultado);
+						}
+					});
+				} else {
+					// O usuário escolheu Ignorar, não faz nada
+					$('#result').text('Limpeza ignorada!');
+				}
+			}
+		}
+	});
+}
+
+// Chame a função de verificação assim que a página carregar
+verificarArquivosTemp();
+
 // FUNÇÕES DOS BOTÕES
 document.addEventListener("DOMContentLoaded", function() {
 	// Adicione tratamento de eventos aos botões

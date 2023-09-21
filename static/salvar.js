@@ -12,7 +12,7 @@ function salvardigitalizacao() {
 	}
 
     // Seleciona a div onde você deseja exibir o status
-    const resultSalvamento = document.getElementById('resultSalvamento');
+    const resultSalvamento = document.getElementById('result');
 
     // Atualiza o conteúdo da div com uma mensagem de status
     resultSalvamento.innerHTML = 'Verificando a existência do PDF...';

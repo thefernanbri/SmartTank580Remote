@@ -12,7 +12,7 @@ function mesclar() {
     }
 
     // Seleciona a div onde você deseja exibir o status
-    const resultSalvamento = document.getElementById('resultSalvamento');
+    const resultSalvamento = document.getElementById('result');
 
     // Atualiza o conteúdo da div com uma mensagem de status
     resultSalvamento.innerHTML = 'Iniciando a operação de mesclagem...';
@@ -41,7 +41,7 @@ function mesclar() {
         } else {
             // Se a resposta não for bem-sucedida, mostre uma mensagem de erro
             response.json().then(data => {
-                resultSalvamento.innerHTML = 'Erro ao mesclar PDFs: ' + data.error;
+                resultSalvamento.innerHTML = 'Erro ao mesclar PDFs:<br> ' + data.error;
             });
         }
     })
