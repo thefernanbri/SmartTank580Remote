@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+	<script src="/static/script.js"></script>
+    <title>Controle da Impressora</title>
+</head>
+<body>
+    <div class="centered-container">
+        <h1>Controle da Impressora</h1>
+			
+        <div class="input-container">
+            <label class="label">Tipo de documento</label>
+            <select id="documentType">
+                <option value="document">PDF</option>
+                <option value="photo">JPEG</option>
+            </select>
+            <br> <!-- Adicione um <br> aqui -->
+            <label class="label">Cor do documento</label>
+            <select id="documentColor">
+                <option value="Color">Cores</option>
+                <option value="Black">Preto</option>
+            </select>
+            <br> <!-- Adicione um <br> aqui -->
+            <label class="label">Preferência de cor</label>
+            <select id="documentSize">
+                <option value="letter">Carta (8,5x11)</option>
+                <option value="a4" selected>A4 (210x297 mm)</option>
+                <option value="4x6">4x6</option>
+                <option value="5x7">5x7</option>
+                <option value="10x15">10x15 cm</option>
+            </select>
+            <br> <!-- Adicione um <br> aqui -->
+            <label class="label">Resolução</label>
+            <select id="documentDpi">
+                <option value="600">Alta - 600 dpi</option>
+                <option value="300" selected>Texto - 300 dpi</option>
+                <option value="200">Foto - 200 dpi</option>
+                <option value="75">Tela - 75 dpi</option>
+            </select>
+            <br> <!-- Adicione um <br> aqui -->
+            <label class="label">Qualidade</label>
+            <select id="documentQuality">
+                <option value="0">Máximo</option>
+                <option value="15">Alto</option>
+                <option value="35">Média</option>
+                <option value="75">Baixo</option>
+            </select>
+			<br> <!-- Adicione um <br> aqui -->
+			<label class="label" for="nomearquivo">Nome do Arquivo</label>
+			<input type="text" id="nomearquivo" name="nomearquivo" placeholder="Digite o nome do arquivo" class="input-text">
+        </div>
+		
+			<!-- ESTADO DO SCANNER -->
+			<div id="StateScannerContainer"></div>
+            <div id="ErrorScannerContainer"></div>
+			
+		<div class="button-container">
+			<button id="createScanJobButton">Criar Tarefa de Digitalização</button>
+		</div>
+
+		<div class="button-container">
+			<button id="SaveButton">Salvar</button>
+			<button id="JoinButton">Juntar</button>
+		</div>
+
+
+        <div class="message-container">
+            <!-- Mensagens de estado, motivo e resultados aqui -->
+			<!-- TAREFA DIGITALIZAÇÃO -->
+			<div id="resultContainer"></div>
+			<!-- ESTADO DA DIGITALIZAÇÃO -->
+            <div id="stateContainer"></div>
+            <div id="reasonContainer"></div>
+            <div id="scanResultContainer"></div>
+			<div id="resultSalvamento"></div>
+        </div>
+    </div>
+</body>
+</html>
