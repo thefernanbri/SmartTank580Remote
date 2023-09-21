@@ -27,10 +27,15 @@ const scannerErrorTranslations = {
 // Função para verificar o estado do scanner
 function checkScannerStatus() {
   fetch('/check_scanner_status')
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erro na solicitação para verificar o estado do scanner');
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.erro) {
-        showError('resultContainer', 'Erro ao verificar o estado do scanner: ' + data.erro);
+        showError('resultContainer', 'Erro: ' + data.erro);
       } else {
         // Traduzir os valores do JSON antes de exibi-los
         const translatedState = scannerStateTranslations[data.scannerState] || data.scannerState;
@@ -47,9 +52,17 @@ function checkScannerStatus() {
       }
     })
     .catch(error => {
-      showError('resultContainer', 'Erro ao verificar o estado do scanner: ' + error);
+      if (error.message.includes('winerror 10060')) {
+        showError('resultContainer', 'A impressora está offline');
+      } else {
+        showError('resultContainer', 'Erro' + error.message);
+      }
     });
 }
+
+// Agendar a chamada da função a cada 2 segundos
+setInterval(checkScannerStatus, 2000); // 2000 milissegundos = 2 segundos
+
 
 
 // Função para limpar o conteúdo do elemento com o ID especificado
@@ -111,7 +124,7 @@ function checkDigitalizacaoStatus() {
         });
 }
 
-// Função para limpar o conteúdo do elemento com o ID especificado
+// Função para limpar o conteúdo do elemento
 function clearError(elementId) {
     const element = document.getElementById(elementId);
     if (element) {
@@ -147,4 +160,11 @@ function showInfo(containerId, message) {
 	const container = document.getElementById(containerId);
 	container.innerHTML = message;
 	container.classList.remove('error');
+}
+
+// Função para exibir erros
+function showError(containerId, message) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = message;
+  container.classList.add('error');
 }

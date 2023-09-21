@@ -26,7 +26,8 @@ def download_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
-
+    
+    
 # Rota para verificar o estado do scanner
 
 @app.route('/check_scanner_status')
@@ -65,7 +66,7 @@ def check_scanner_status():
             return jsonify({"erro": f"A solicitação falhou com o código de status {response.status_code}"})
     except requests.exceptions.ConnectionError:
         # Lidar com o erro de conexão (scanner offline)
-        return jsonify({"erro": "O scanner está offline"})
+        return jsonify({"erro": "A impressora está offline"})
 
 
 
@@ -192,8 +193,8 @@ def check_scan_status():
 # Rota para obter o último PDF salvo
 @app.route('/get_last_saved_pdf')
 def get_last_saved_pdf():
-    global last_saved_pdf_name
 
+    global last_saved_pdf_name
     try:
         if last_saved_pdf_name:
             # Capturar o nome de arquivo personalizado, se fornecido como um parâmetro na URL
@@ -206,12 +207,12 @@ def get_last_saved_pdf():
                 pdf_data = file.read()
 
             return Response(pdf_data, content_type='application/pdf', headers={'Content-Disposition': f'attachment; filename={nome_arquivo_final}'})
+            
         else:
             return jsonify({"error": "Nenhum PDF foi salvo ainda."}), 404
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 @app.route('/merge_pdfs', methods=['POST'])
