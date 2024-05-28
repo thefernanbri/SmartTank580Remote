@@ -106,9 +106,12 @@ def check_Digitalizacao_status():
 @app.route('/create_scan_job', methods=['POST'])
 
 def create_scan_job():
+    global document_type  # Adicione a variável global ao escopo da função
+
     # Obtenha o valor de scan_settings_xml da solicitação AJAX
     data = request.get_json()
-    
+    document_type = request.args.get('document_type')
+    nome_arquivo = request.args.get('nomearquivo')
     # URL de destino para criar a tarefa de digitalização
     scan_url = 'https://192.168.1.92/eSCL/ScanJobs'
 
@@ -128,11 +131,11 @@ def create_scan_job():
     # Verificar a resposta
     if response.status_code == 201:
         print("Tarefa de digitalização criada com sucesso.")
-        check_scan_status()
+        check_scan_status()  # Chame a função para verificar o estado da digitalização
     else:
         print(f"Falha ao criar a tarefa de digitalização. Código de status: {response.status_code}")
 
-    return "Tarefa de Digitalização Criada"  # Movido para dentro da função
+    return "Tarefa de Digitalização Criada"
 
 
 # Rota para verificar o estado da digitalização
@@ -141,7 +144,7 @@ scan_counter = 0
 last_saved_pdf_name = ""
 @app.route('/check_scan_status')
 def check_scan_status():
-    global scan_counter, last_saved_pdf_name  # Usar a variável global para contar os arquivos de digitalização
+    global scan_counter, last_saved_pdf_name, document_type  # Adicione a variável global ao escopo da função
 
     # Substitua com as configurações da sua impressora
     url = 'https://192.168.1.92/eSCL/ScannerStatus'
@@ -170,11 +173,11 @@ def check_scan_status():
                 file_response = requests.get(file_url, headers=headers, verify=False)
 
                 if file_response.status_code == 200:
-                    # Salvar o arquivo na pasta "temp" com o nome no formato 'scan0.pdf', 'scan1.pdf', ...
-                    file_name = f'temp/scan{scan_counter}.pdf'
+                    # Salvar o arquivo na pasta "temp"
+                    file_name = f'temp/scan{scan_counter}.jpeg' if document_type == "photo" else f'temp/scan{scan_counter}.pdf'
                     with open(file_name, 'wb') as file:
                         file.write(file_response.content)
-                        
+                    
                     # Atualizar o nome do último PDF salvo
                     last_saved_pdf_name = file_name
                     
