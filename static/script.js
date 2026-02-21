@@ -55,8 +55,19 @@ const scannerErrorTranslations = {
   "noError": "Sem erro",
 };
 
+// Variável para controlar se há uma requisição em andamento
+let scannerStatusRequestInProgress = false;
+let scannerStatusIntervalId = null;
+
 // Função para verificar o estado do scanner
 function checkScannerStatus() {
+  // Evita requisições simultâneas
+  if (scannerStatusRequestInProgress) {
+    return;
+  }
+  
+  scannerStatusRequestInProgress = true;
+  
   fetch('/check_scanner_status')
     .then(response => {
       if (!response.ok) {
@@ -88,13 +99,11 @@ function checkScannerStatus() {
       } else {
         showError('resultContainer', 'Erro' + error.message);
       }
+    })
+    .finally(() => {
+      scannerStatusRequestInProgress = false;
     });
 }
-
-// Agendar a chamada da função a cada 2 segundos
-setInterval(checkScannerStatus, 2000); // 2000 milissegundos = 2 segundos
-
-
 
 // Função para limpar o conteúdo do elemento com o ID especificado
 function clearError(elementId) {
@@ -104,8 +113,11 @@ function clearError(elementId) {
 	}
 }
 
-// Agendar a chamada da função a cada 2 segundos
-setInterval(checkScannerStatus, 2000); // 2000 milissegundos = 2 segundos
+// Iniciar o polling apenas uma vez quando a página carregar
+// Intervalo aumentado para 5 segundos para reduzir carga na impressora
+if (!scannerStatusIntervalId) {
+  scannerStatusIntervalId = setInterval(checkScannerStatus, 5000); // 5000 milissegundos = 5 segundos
+}
 
 
 let loopIntervalId = null; // Variável para armazenar o ID do intervalo
@@ -148,6 +160,20 @@ function checkDigitalizacaoStatus() {
             } else {
                 showInfo('stateContainer', `Estado da digitalização: ${data.estado}`);
                 showInfo('reasonContainer', `Motivo: ${data.motivo}`);
+                
+                // Se o arquivo foi baixado com sucesso, parar o loop de monitoramento e atualizar preview
+                if (data.arquivo_baixado || data.estado === "Concluído") {
+                    pararDigitalizacaoStatus();
+                    showInfo('resultContainer', 'Digitalização concluída e arquivo baixado com sucesso!');
+                    
+                    // Adicionar ao preview se houver informações do arquivo
+                    if (data.nome_arquivo && data.url_preview) {
+                        adicionarAoPreview(data.nome_arquivo, data.url_preview, data.tipo || 'pdf');
+                    } else {
+                        // Se não tiver informações, recarregar todos os arquivos
+                        carregarPreview();
+                    }
+                }
             }
         })
         .catch(error => {
@@ -193,9 +219,134 @@ function showInfo(containerId, message) {
 	container.classList.remove('error');
 }
 
+// Função para exibir mensagens
+function showMessage(containerId, message) {
+	const container = document.getElementById(containerId);
+	container.innerHTML = message;
+	container.classList.remove('error');
+}
+
 // Função para exibir erros
 function showError(containerId, message) {
   const container = document.getElementById(containerId);
   container.innerHTML = message;
   container.classList.add('error');
 }
+
+// ========== FUNÇÕES DE PREVIEW ==========
+
+// Função para adicionar um arquivo ao preview
+function adicionarAoPreview(nomeArquivo, urlPreview, tipo) {
+    const previewContainer = document.getElementById('previewContainer');
+    
+    // Remover mensagem de vazio se existir
+    const emptyMsg = previewContainer.querySelector('.preview-empty');
+    if (emptyMsg) {
+        emptyMsg.remove();
+    }
+    
+    // Verificar se o arquivo já existe no preview
+    const existingItem = previewContainer.querySelector(`[data-nome="${nomeArquivo}"]`);
+    if (existingItem) {
+        return; // Já existe, não adicionar novamente
+    }
+    
+    // Criar elemento do preview
+    const previewItem = document.createElement('div');
+    previewItem.className = 'preview-item';
+    previewItem.setAttribute('data-nome', nomeArquivo);
+    
+    const header = document.createElement('div');
+    header.className = 'preview-item-header';
+    
+    const nome = document.createElement('div');
+    nome.className = 'preview-item-name';
+    nome.textContent = nomeArquivo;
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'preview-item-remove';
+    removeBtn.textContent = 'Remover';
+    removeBtn.onclick = () => removerDoPreview(nomeArquivo, previewItem);
+    
+    header.appendChild(nome);
+    header.appendChild(removeBtn);
+    
+    const content = document.createElement('div');
+    content.className = 'preview-item-content';
+    
+    if (tipo === 'image') {
+        const img = document.createElement('img');
+        img.src = urlPreview;
+        img.alt = nomeArquivo;
+        img.onerror = function() {
+            this.style.display = 'none';
+            content.innerHTML = `<div class="pdf-placeholder">Erro ao carregar imagem: ${nomeArquivo}</div>`;
+        };
+        content.appendChild(img);
+    } else {
+        // Para PDF, usar iframe ou placeholder com link
+        const iframe = document.createElement('iframe');
+        iframe.src = urlPreview;
+        iframe.title = nomeArquivo;
+        iframe.onerror = function() {
+            this.style.display = 'none';
+            content.innerHTML = `<div class="pdf-placeholder"><a href="${urlPreview}" target="_blank">Abrir PDF: ${nomeArquivo}</a></div>`;
+        };
+        content.appendChild(iframe);
+    }
+    
+    previewItem.appendChild(header);
+    previewItem.appendChild(content);
+    
+    // Adicionar no início do container (mais recente primeiro)
+    previewContainer.insertBefore(previewItem, previewContainer.firstChild);
+}
+
+// Função para remover um arquivo do preview
+function removerDoPreview(nomeArquivo, elemento) {
+    if (confirm(`Deseja realmente remover ${nomeArquivo} do preview?`)) {
+        elemento.remove();
+        
+        // Verificar se não há mais itens, mostrar mensagem de vazio
+        const previewContainer = document.getElementById('previewContainer');
+        if (previewContainer.children.length === 0) {
+            const emptyMsg = document.createElement('p');
+            emptyMsg.className = 'preview-empty';
+            emptyMsg.textContent = 'Nenhum arquivo escaneado ainda';
+            previewContainer.appendChild(emptyMsg);
+        }
+    }
+}
+
+// Função para carregar todos os arquivos no preview
+function carregarPreview() {
+    fetch('/listar_arquivos_temp')
+        .then(response => response.json())
+        .then(data => {
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = ''; // Limpar container
+            
+            if (data.erro) {
+                previewContainer.innerHTML = `<p class="preview-empty">Erro ao carregar arquivos: ${data.erro}</p>`;
+                return;
+            }
+            
+            if (data.arquivos && data.arquivos.length > 0) {
+                // Adicionar arquivos (mais recente primeiro - ordem reversa)
+                data.arquivos.reverse().forEach(arquivo => {
+                    adicionarAoPreview(arquivo.nome, arquivo.url, arquivo.tipo);
+                });
+            } else {
+                previewContainer.innerHTML = '<p class="preview-empty">Nenhum arquivo escaneado ainda</p>';
+            }
+        })
+        .catch(error => {
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = `<p class="preview-empty">Erro ao carregar preview: ${error}</p>`;
+        });
+}
+
+// Carregar preview quando a página carregar (após DOMContentLoaded)
+setTimeout(function() {
+    carregarPreview();
+}, 500);

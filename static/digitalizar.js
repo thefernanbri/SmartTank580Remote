@@ -16,13 +16,27 @@ function createScanJob() {
 		},
 		body: JSON.stringify({ scan_settings_xml: scanSettingsXml }),
 	})
-		iniciarDigitalizacaoStatus()
-		.then(response => response.text())
+		.then(response => {
+			// Verificar se a resposta foi bem-sucedida
+			if (!response.ok) {
+				// Se não for bem-sucedida, tentar ler como JSON para obter a mensagem de erro
+				return response.json().then(data => {
+					throw new Error(data.erro || `Erro HTTP ${response.status}: ${response.statusText}`);
+				});
+			}
+			// Se for bem-sucedida, ler como JSON
+			return response.json();
+		})
 		.then(data => {
-			showInfo('resultContainer', data)
+			if (data.erro) {
+				showError('resultContainer', data.erro);
+			} else {
+				showInfo('resultContainer', data.mensagem || 'Tarefa de Digitalização Criada');
+				iniciarDigitalizacaoStatus(); // Inicia o monitoramento após criar a tarefa com sucesso
+			}
 		})
 		.catch(error => {
-			showError('resultContainer', 'Erro ao criar a tarefa: ' + error);
+			showError('resultContainer', 'Erro ao criar a tarefa: ' + error.message);
 		});
 }
 

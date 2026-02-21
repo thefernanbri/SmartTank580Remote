@@ -9,11 +9,26 @@
 	<script src="/static/digitalizar.js"></script>
 	<script src="/static/mesclar.js"></script>
 	<script src="/static/salvar.js"></script>
+	<script src="/static/discovery.js"></script>
     <title>CONTROLE DA IMPRESSORA</title>
 </head>
 <body>
+    <div class="main-wrapper">
     <div class="centered-container">
         <h1>CONTROLE DA IMPRESSORA</h1>
+		
+		<!-- Seção de Descoberta de IP -->
+		<div class="discovery-container" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+			<h3 style="margin-top: 0;">Descoberta Automática de IP</h3>
+			<p style="margin: 10px 0; color: #666;">Clique no botão abaixo para descobrir automaticamente o IP da impressora na rede.</p>
+			<div class="button-container">
+				<button id="discoverPrinterButton" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+					🔍 Descobrir IP da Impressora
+				</button>
+			</div>
+			<div id="discoveryStatus" style="margin-top: 10px; padding: 10px; border-radius: 4px; display: none;"></div>
+			<div id="discoveredIp" style="margin-top: 10px; padding: 10px; border-radius: 4px; display: none;"></div>
+		</div>
 			
         <div class="input-container">
             <label class="label">Tipo de documento</label>
@@ -85,6 +100,15 @@
             <div id="scanResultContainer"></div>
 			<div id="result"></div>
         </div>
+    </div>
+    
+    <!-- Preview Panel -->
+    <div class="preview-panel">
+        <h2>Preview</h2>
+        <div id="previewContainer" class="preview-container">
+            <p class="preview-empty">Nenhum arquivo escaneado ainda</p>
+        </div>
+    </div>
     </div>
 </body>
 </html>

@@ -1,16 +1,21 @@
 from flask import Blueprint, jsonify
 import requests
+from dotenv import load_dotenv
+
+# Carrega as variáveis do arquivo .env para o sistema
+load_dotenv()
 
 printer_blueprint = Blueprint('printer', __name__)
 
 @printer_blueprint.route('/check_printer_status')
 def check_printer_status():
+    ip = get_target_ip()
     # URL de destino para verificar o estado da digitalização
-    url = 'https://192.168.1.92/eSCL/ScannerStatus'
+    url = 'https://{ip}/eSCL/ScannerStatus'
 
     # Cabeçalhos da solicitação
     headers = {
-        'Host': '192.168.1.92',
+        'Host': ip,
         'Connection': 'close'
     }
 
