@@ -5,11 +5,14 @@ function createScanJob() {
 	// Obtém o valor do campo "Nome do Arquivo"
 	const nomeArquivo = document.getElementById('nomearquivo').value;
 
+	// Obtém o estado do checkbox "Salvar no Computador"
+	const salvarPC = document.getElementById('SalvarPC').checked;
+
 	// Obtém o valor de scan_settings_xml do JavaScript
 	const scanSettingsXml = updateScanSettings();
 
 	// Faz uma solicitação POST para o Flask com o valor de scan_settings_xml e nomearquivo
-	fetch(`/create_scan_job?document_type=${documentType}&nomearquivo=${nomeArquivo}`, {
+	fetch(`/create_scan_job?document_type=${documentType}&nomearquivo=${nomeArquivo}&salvar_pc=${salvarPC}`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

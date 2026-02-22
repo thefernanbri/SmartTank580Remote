@@ -30,18 +30,29 @@ body {
 /* Preview Panel */
 .preview-panel {
     width: 600px;
+    min-width: 400px;
+    max-width: 90vw;
     background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
-    max-height: calc(100vh - 40px);
     position: sticky;
     top: 20px;
+    resize: horizontal;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-.preview-panel h2 {
+.preview-panel-wrapper {
+    overflow-y: auto;
+    max-height: calc(100vh - 40px);
+    height: calc(100vh - 40px);
+    padding: 20px;
+    flex: 1;
+}
+
+.preview-panel-wrapper h2 {
     margin-top: 0;
     margin-bottom: 20px;
     color: #333;

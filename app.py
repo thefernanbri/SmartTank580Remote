@@ -10,6 +10,7 @@ from services.printer_discovery_service import PrinterDiscoveryService
 import re
 import threading
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Carrega as variáveis do arquivo .env para o sistema
 load_dotenv()
@@ -158,13 +159,44 @@ def check_Digitalizacao_status():
                                 last_saved_pdf_name = file_name
                                 
                                 print(f"Arquivo de digitalização '{file_name}' baixado com sucesso.")
+                                
+                                # Se o checkbox "Salvar no Computador" estiver marcado, salvar permanentemente
+                                mensagem_salvamento = ""
+                                if salvar_no_computador:
+                                    try:
+                                        # Verifica se diretório pdf existe
+                                        if not os.path.exists('pdf'):
+                                            os.makedirs('pdf')
+                                        
+                                        # Gerar nome do arquivo permanente
+                                        if nome_arquivo_permanente:
+                                            nome_permanente = nome_arquivo_permanente.strip()
+                                            if not nome_permanente.endswith(('.pdf', '.jpeg', '.jpg')):
+                                                nome_permanente += '.pdf' if document_type != "photo" else '.jpeg'
+                                        else:
+                                            # Gerar nome com data e hora
+                                            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                                            extensao = '.pdf' if document_type != "photo" else '.jpeg'
+                                            nome_permanente = f'Digitalizacao_{timestamp}{extensao}'
+                                        
+                                        # Copiar arquivo para pasta pdf
+                                        file_path_permanente = f'pdf/{nome_permanente}'
+                                        with open(file_path_permanente, 'wb') as file_permanente:
+                                            file_permanente.write(file_response.content)
+                                        
+                                        mensagem_salvamento = f" Arquivo salvo permanentemente como '{nome_permanente}'."
+                                        print(f"Arquivo salvo permanentemente: '{file_path_permanente}'")
+                                    except Exception as e:
+                                        print(f"Erro ao salvar arquivo permanentemente: {e}")
+                                        mensagem_salvamento = " Erro ao salvar permanentemente."
+                                
                                 scan_counter += 1  # Incrementar o contador de digitalizações
                                 
                                 # Se o arquivo foi baixado com sucesso, retornar estado como "Concluído"
                                 nome_arquivo_simples = os.path.basename(file_name)
                                 return jsonify({
                                     "estado": "Concluído", 
-                                    "motivo": "Arquivo baixado com sucesso",
+                                    "motivo": "Arquivo baixado com sucesso" + mensagem_salvamento,
                                     "arquivo_baixado": True,
                                     "nome_arquivo": nome_arquivo_simples,
                                     "url_preview": f"/temp/{nome_arquivo_simples}",
@@ -195,6 +227,12 @@ def create_scan_job():
     data = request.get_json()
     document_type = request.args.get('document_type')
     nome_arquivo = request.args.get('nomearquivo')
+    salvar_pc = request.args.get('salvar_pc', 'false').lower() == 'true'
+    
+    # Armazenar o estado do checkbox e nome do arquivo em variáveis globais para uso posterior
+    global salvar_no_computador, nome_arquivo_permanente
+    salvar_no_computador = salvar_pc
+    nome_arquivo_permanente = nome_arquivo
     
     # CORREÇÃO: Definição do IP antes do uso
     ip = get_target_ip()
@@ -290,13 +328,45 @@ def check_scan_status():
                         last_saved_pdf_name = file_name
                         
                         print(f"Arquivo de digitalização '{file_name}' baixado com sucesso.")
+                        
+                        # Se o checkbox "Salvar no Computador" estiver marcado, salvar permanentemente
+                        mensagem_salvamento = ""
+                        if salvar_no_computador:
+                            try:
+                                # Verifica se diretório pdf existe
+                                if not os.path.exists('pdf'):
+                                    os.makedirs('pdf')
+                                
+                                # Gerar nome do arquivo permanente
+                                from datetime import datetime
+                                if nome_arquivo_permanente:
+                                    nome_permanente = nome_arquivo_permanente.strip()
+                                    if not nome_permanente.endswith(('.pdf', '.jpeg', '.jpg')):
+                                        nome_permanente += '.pdf' if document_type != "photo" else '.jpeg'
+                                else:
+                                    # Gerar nome com data e hora
+                                    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                                    extensao = '.pdf' if document_type != "photo" else '.jpeg'
+                                    nome_permanente = f'Digitalizacao_{timestamp}{extensao}'
+                                
+                                # Copiar arquivo para pasta pdf
+                                file_path_permanente = f'pdf/{nome_permanente}'
+                                with open(file_path_permanente, 'wb') as file_permanente:
+                                    file_permanente.write(file_response.content)
+                                
+                                mensagem_salvamento = f" Arquivo salvo permanentemente como '{nome_permanente}'."
+                                print(f"Arquivo salvo permanentemente: '{file_path_permanente}'")
+                            except Exception as e:
+                                print(f"Erro ao salvar arquivo permanentemente: {e}")
+                                mensagem_salvamento = " Erro ao salvar permanentemente."
+                        
                         scan_counter += 1  # Incrementar o contador de digitalizações
                         
                         # Se o arquivo foi baixado com sucesso, retornar estado como "Concluído"
                         nome_arquivo_simples = os.path.basename(file_name)
                         return jsonify({
                             "estado": "Concluído", 
-                            "motivo": "Arquivo baixado com sucesso",
+                            "motivo": "Arquivo baixado com sucesso" + mensagem_salvamento,
                             "url_arquivo": file_url,
                             "arquivo_baixado": True,
                             "nome_arquivo": nome_arquivo_simples,
